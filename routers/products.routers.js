@@ -1,51 +1,28 @@
 const express=require('express');
-const faker = require('faker')
 const router=express.Router();
-const ProductService = require('../services/product.service')
-const service = new ProductService()
+const ValidatorHandler = require('../middlewares/validator.handler')
+const { CreateProductSchema, UpdateProductSchema, getProductSchema } = require('../schemas/product.schema');
+
+const ProductController = require('../controllers/product.controller')
+const controller = new ProductController()
 
 
 // Metodos get
-router.get("/", (req, res) => {
-    const products = service.find()
-    res.json(products)
-});
+router.get("/", controller.getProducts);
 
-router.get('/filtro', (req, res) => {
-    res.send('Soy un filtro');
-  });
+router.get('/filtro', controller.filterProduct);
 
-router.get('/:id', (req, res) => {
-    const { id } = req.params;
-    const product = service.findOne(id)
-    res.json(product)
-});
-
-
+router.get('/:id', ValidatorHandler(getProductSchema, 'params'), controller.getProduct);
 
 // Metodo post
-router.post('/', (req, res) => {
-    const body = req.body;
-    const newProduct = service.create(body)
-    res.status(201).json(newProduct)
-});
+router.post('/', ValidatorHandler(CreateProductSchema, 'body'), controller.createProduct);
 
 
 // Metodo patch
-router.patch('/:id', (req, res) => {
-    const { id } = req.params;
-    const body = req.body;
-    
-    const updateProduct = service.update(id, body)
-    res.json(updateProduct);
-});
+router.patch('/:id', ValidatorHandler(getProductSchema, 'params'), ValidatorHandler(UpdateProductSchema, 'body'), controller.updateProduct);
 
 
 // Metodo delete
-router.delete('/:id', (req, res) => {
-    const { id } = req.params;
-    const deleteProduct = service.delete(id)
-    res.json(deleteProduct);
-});
+router.delete('/:id', ValidatorHandler(getProductSchema, 'params'), controller.deleteProduct);
 
 module.exports = router;
